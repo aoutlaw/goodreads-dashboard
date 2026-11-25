@@ -4,12 +4,13 @@ A working web version of the Reading Stats dashboard concept from the GIXD501 Fi
 
 ## Run it
 
-Open `index.html` in a browser, or serve the folder (recommended, so every browser loads the covers):
+Open `index.html` (the Goodreads-style start page) in a browser, or serve the folder (recommended, so every browser loads the covers):
 
 ```sh
 cd goodreads-dashboard
 python3 -m http.server 8000
-# then open http://localhost:8000
+# then open http://localhost:8000 and choose Reading Stats
+# (or go straight to http://localhost:8000/reading-stats.html)
 ```
 
 To publish it, any static host works, including GitHub Pages (Settings > Pages > deploy from the main branch, root folder).
@@ -45,12 +46,14 @@ Goal and progress changes are stored only in your browser (localStorage). Nothin
 ## Files
 
 ```
-index.html               page structure
+index.html               start page (Goodreads home), links to Reading Stats
+reading-stats.html       the dashboard
 css/tokens.css           colors, type and spacing from the Figma variables
 css/styles.css           layout and components
 js/data.js               generated from your export (don't edit)
 js/content.js            hand-written content
-js/app.js                rendering and interactions
+js/shell.js              shared header menus, theme and footer switch
+js/app.js                dashboard rendering and interactions
 scripts/build_data.py    CSV -> js/data.js
 covers/                  book covers (480 px tall JPEGs)
 ```

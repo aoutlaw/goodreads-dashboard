@@ -73,62 +73,8 @@
   function hideToast() { toastEl.hidden = true; }
   toastEl.addEventListener("click", hideToast);
 
-  // ---------- Theme ----------
-  var mq = window.matchMedia("(prefers-color-scheme: dark)");
-  function applyTheme() {
-    var pref = store("gr-theme") || "auto";
-    var dark = pref === "dark" || (pref === "auto" && mq.matches);
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    $$('input[name="theme"]').forEach(function (r) { r.checked = r.value === pref; });
-  }
-  $$('input[name="theme"]').forEach(function (r) {
-    r.addEventListener("change", function () { store("gr-theme", r.value); applyTheme(); });
-  });
-  if (mq.addEventListener) mq.addEventListener("change", applyTheme); else if (mq.addListener) mq.addListener(applyTheme);
-  applyTheme();
-
-  // ---------- User ----------
-  $$(".avatar").forEach(function (a) { a.setAttribute("data-initials", C.user.initials); });
-  $("[data-user-name]").textContent = C.user.name;
-  $("[data-user-link]").href = C.user.profileUrl;
-  var userId = (C.user.profileUrl.match(/(\d+)/) || [])[1];
-  if (userId) $("[data-shelf-link]").href = "https://www.goodreads.com/review/list/" + userId + "?shelf=currently-reading";
-
-  // ---------- Popovers (profile menu and time range) ----------
-  var openPop = null;
-  function closePop(focusButton) {
-    if (!openPop) return;
-    openPop.menu.hidden = true;
-    openPop.button.setAttribute("aria-expanded", "false");
-    if (focusButton) openPop.button.focus();
-    openPop = null;
-  }
-  $$("[data-popover]").forEach(function (button) {
-    var menu = document.getElementById(button.getAttribute("data-popover"));
-    button.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var wasOpen = openPop && openPop.menu === menu;
-      closePop();
-      if (wasOpen) return;
-      menu.hidden = false;
-      button.setAttribute("aria-expanded", "true");
-      openPop = { button: button, menu: menu };
-      var first = $('[aria-checked="true"], input:checked, a, button', menu);
-      if (first && e.detail === 0) first.focus(); // keyboard open: move focus into the menu
-    });
-    menu.addEventListener("click", function (e) { e.stopPropagation(); });
-  });
-  document.addEventListener("click", function () { closePop(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closePop(true); });
-
-  // Mobile menu
-  var menuBtn = $(".menu-button");
-  var nav = $("#mobile-nav");
-  menuBtn.addEventListener("click", function () {
-    var open = nav.classList.toggle("is-open");
-    menuBtn.setAttribute("aria-expanded", String(open));
-    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-  });
+  // Theme, header menus and the user's name live in js/shell.js.
+  var closePop = window.Shell.closePop;
 
   // ---------- Time range ----------
   var RANGES = [
@@ -187,10 +133,10 @@
     $("[data-hero-stats]").innerHTML =
       '<div class="stat stat--hero"><span class="stat__value">' + fmt(books.length) + '</span><span class="stat__label">books read' + (range === "all" ? "" : ", " + esc(label)) + "</span></div>" +
       '<div class="hero__grid">' +
-        '<div class="stat"><span class="stat__value">' + fmt(pages) + '</span><span class="stat__label">pages</span></div>' +
-        '<div class="stat"><span class="stat__value">' + (avg ? avg.toFixed(2) : "–") + '</span><span class="stat__label">average rating</span></div>' +
-        '<div class="stat"><span class="stat__value">' + fmt(C.hoursListened) + '</span><span class="stat__label">hours listened</span></div>' +
-        '<div class="stat"><span class="stat__value">' + (new Date().getFullYear() - firstYear) + '</span><span class="stat__label">years tracked</span></div>' +
+        '<div class="stat stat--pages"><span class="stat__value">' + fmt(pages) + '</span><span class="stat__label">pages</span></div>' +
+        '<div class="stat stat--avg"><span class="stat__value">' + (avg ? avg.toFixed(2) : "–") + '</span><span class="stat__label">average rating</span></div>' +
+        '<div class="stat stat--hours"><span class="stat__value">' + fmt(C.hoursListened) + '</span><span class="stat__label">hours listened</span></div>' +
+        '<div class="stat stat--years"><span class="stat__value">' + (new Date().getFullYear() - firstYear) + '</span><span class="stat__label">years tracked</span></div>' +
         (range === "all" ? "" : '<p class="hero__note">Hours listened and years tracked always cover all time.</p>') +
       "</div>";
   }
@@ -215,7 +161,7 @@
           '<circle class="ring__arc" cx="70" cy="70" r="' + r + '" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + circ + '" data-target="' + circ * (1 - pct) + '"/>' +
           (pct > 0 ? '<circle cx="' + (70 + r * Math.cos(a)) + '" cy="' + (70 + r * Math.sin(a)) + '" r="9" fill="var(--bg-surface)" stroke="var(--data-primary)" stroke-width="4"/>' : "") +
         "</svg>" +
-        '<div class="ring__center"><span class="ring__count">' + done + '</span><span class="ring__of">of ' + g + "</span></div>" +
+        '<div class="ring__center"><span class="ring__count">' + done + '</span><span class="ring__of">of ' + g + '<span class="m-only"> books</span></span></div>' +
       "</div>" +
       "<div>" +
         '<p class="eyebrow">' + YEAR + " Reading Challenge</p>" +
@@ -294,8 +240,8 @@
     $("[data-current-list]").innerHTML = list.map(function (b) {
       var p = pageOf(b), pct = b.pages ? Math.round((p / b.pages) * 100) : 0;
       return '<article class="current">' +
-        '<a href="' + esc(bookUrl(b.title)) + '" target="_blank" rel="noopener">' + coverHtml(b.title, b.cover) + "</a>" +
-        "<div>" +
+        '<a class="current__cover" href="' + esc(bookUrl(b.title)) + '" target="_blank" rel="noopener">' + coverHtml(b.title, b.cover) + "</a>" +
+        '<div class="current__details">' +
           '<h3 class="current__title">' + esc(b.title) + "</h3>" +
           '<p class="current__author">by ' + esc(b.author) + " · " + esc(b.format) + "</p>" +
           (b.rating ? '<p class="rating-line"><span class="star" aria-hidden="true">★</span><strong>' + b.rating.toFixed(2) + "</strong> · " + esc(b.count) + " ratings</p>" : "") +
@@ -304,6 +250,18 @@
           '<button class="button button--secondary button--small" type="button" data-update="' + b.id + '">Update progress</button>' +
         "</div></article>";
     }).join("");
+    sizeCovers();
+  }
+  // Each cover is as tall as the details beside it (title through the Update progress button).
+  var coverObserver = window.ResizeObserver ? new ResizeObserver(function (entries) {
+    entries.forEach(function (e) { setCoverWidth(e.target); });
+  }) : null;
+  function setCoverWidth(details) {
+    var h = details.getBoundingClientRect().height;
+    if (h) details.parentNode.style.setProperty("--cover-w", Math.round(h * 2 / 3) + "px");
+  }
+  function sizeCovers() {
+    $$(".current__details").forEach(function (d) { setCoverWidth(d); if (coverObserver) coverObserver.observe(d); });
   }
   var activeBook = null;
   $("[data-current-list]").addEventListener("click", function (e) {
@@ -582,50 +540,77 @@
     $("[data-formats]").innerHTML =
       '<div class="split" role="img" aria-label="' + C.formats.map(function (f) { return f.count + " " + f.label; }).join(", ") + '">' +
       C.formats.map(function (f, i) { return '<span style="width:' + (f.count / total) * 100 + "%;background:" + f.color + ";animation-delay:" + i * 60 + 'ms"></span>'; }).join("") + "</div>" +
-      '<ul class="legend">' + C.formats.map(function (f) {
-        return '<li><span class="dot" style="background:' + f.color + '"></span><span>' + esc(f.label.charAt(0).toUpperCase() + f.label.slice(1)) + "</span><span><strong>" + f.count + "</strong><em>" + Math.round((f.count / total) * 100) + "%</em></span></li>";
+      '<ul class="format-stats">' + C.formats.map(function (f) {
+        return '<li><span class="dot" style="background:' + f.color + '" aria-hidden="true"></span><strong>' + f.count + "</strong>" +
+          "<span>" + esc(f.label) + " · " + Math.round((f.count / total) * 100) + "%</span></li>";
       }).join("") + "</ul>" +
-      '<p class="insight">' + esc(C.formatInsight) + "</p>";
+      '<p class="insight formats-insight">' + esc(C.formatInsight) + "</p>";
   }
 
   // ---------- Listening clock ----------
-  function polar(r, deg) { var a = (deg * Math.PI) / 180; return [140 + r * Math.cos(a), 140 + r * Math.sin(a)]; }
+  var CX = 160, R_IN = 50, R_OUT = 156;
+  function polar(r, deg) { var a = (deg * Math.PI) / 180; return [CX + r * Math.cos(a), CX + r * Math.sin(a)]; }
   function wedge(r0, r1, a0, a1) {
     var p1 = polar(r1, a0), p2 = polar(r1, a1), p3 = polar(r0, a1), p4 = polar(r0, a0);
     return "M" + p1 + "A" + r1 + "," + r1 + " 0 0 1 " + p2 + "L" + p3 + "A" + r0 + "," + r0 + " 0 0 0 " + p4 + "Z";
   }
   function renderListening() {
     var peakHours = [15, 16, 17];
-    var wedges = C.listening.map(function (v, h) {
-      if (!v) return "";
-      var a0 = -90 + h * 15 + 1;
-      return '<path class="clock__wedge' + (peakHours.indexOf(h) >= 0 ? " clock__wedge--peak" : "") + '" d="' + wedge(44, 44 + v * 92, a0, a0 + 13) + '" style="animation-delay:' + h * 15 + 'ms"/>';
+    var bars = C.listening.map(function (v, h) {
+      var a0 = -90 + h * 15 + 1, a1 = a0 + 13;
+      var bg = '<path class="clock__bg" d="' + wedge(R_IN, R_OUT, a0, a1) + '"/>';
+      if (!v) return bg;
+      return bg + '<path class="clock__wedge' + (peakHours.indexOf(h) >= 0 ? " clock__wedge--peak" : "") + '" d="' + wedge(R_IN, R_IN + v * (R_OUT - R_IN), a0, a1) + '" style="animation-delay:' + h * 15 + 'ms"/>';
     }).join("");
-    var labels = [["12a", 0], ["6a", 6], ["12p", 12], ["6p", 18]].map(function (l) {
-      var p = polar(152, -90 + l[1] * 15);
-      return '<text class="clock__label" x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" dominant-baseline="middle">' + l[0] + "</text>";
+    var labels = [["12a", 0, 0, -1], ["6a", 6, 1, 0], ["12p", 12, 0, 1], ["6p", 18, -1, 0]].map(function (l) {
+      return '<text class="clock__label" x="' + (CX + l[2] * 30) + '" y="' + (CX + l[3] * 28) + '" text-anchor="middle" dominant-baseline="central">' + l[0] + "</text>";
     }).join("");
     $("[data-listening]").innerHTML =
-      '<div class="clock"><svg viewBox="-24 -24 328 328" role="img" aria-label="Listening by hour. Peak at ' + esc(C.listeningPeak.hour) + '.">' +
-        '<circle class="clock__track" cx="140" cy="140" r="136"/>' + wedges + labels +
-        '<text class="clock__center-value" x="140" y="136" text-anchor="middle">' + esc(C.listeningPeak.hour) + "</text>" +
-        '<text class="clock__center-label" x="140" y="154" text-anchor="middle">peak</text>' +
-      "</svg></div>" +
-      '<p class="legend-inline"><span><i class="swatch" style="background:var(--data-primary)"></i>3 to 6 pm</span><span><i class="swatch" style="background:var(--data-primary-soft)"></i>Other hours</span></p>' +
-      '<div class="clock-stats"><div><strong>' + esc(C.listeningPeak.share) + "</strong><span>of listening is " + esc(C.listeningPeak.window) + "</span></div>" +
-        "<div><strong>" + fmt(C.hoursListened) + "</strong><span>hours listened</span></div></div>" +
+      '<div class="clock"><svg viewBox="0 0 320 320" role="img" aria-label="Listening by hour of day. Peak at ' + esc(C.listeningPeak.hour) + '.">' + bars + labels + "</svg></div>" +
+      '<p class="legend-inline legend-inline--center"><span><i class="swatch swatch--dot" style="background:var(--data-primary)"></i>Afternoon, 3 to 6 pm</span><span><i class="swatch swatch--dot" style="background:var(--data-primary-soft)"></i>Rest of the day</span></p>' +
+      '<div class="clock-stats"><div><strong>' + esc(C.listeningPeak.hour) + "</strong><span>your peak hour</span></div>" +
+        "<div><strong>" + esc(C.listeningPeak.share) + "</strong><span>" + esc(C.listeningPeak.window) + "</span></div></div>" +
       '<p class="insight">' + esc(C.listeningInsight) + "</p>";
   }
 
   // ---------- Section rail (≥1280 px) ----------
+  // One stop per band of the page. Reading now and Books Per Year share a row, so they share a stop.
+  // The current stop is a filled purple square with its label always showing. Other stops are
+  // outlined, shrinking with distance (flat after 3 steps). Hovering grows squares like the macOS dock.
   var sections = $$("[data-section]");
   var rail = $("[data-section-rail]");
+  var BASE = [30, 24, 19, 15]; // px by distance from the current stop: 0, 1, 2, 3+
+  var BOOST = 14;              // extra px at the pointer, falling off over about two neighbours
   rail.innerHTML = sections.map(function (s, i) {
-    return '<button class="rail-item" type="button" data-target="' + i + '"><span class="rail-item__label">' + esc(s.getAttribute("data-section")) + '</span><span class="rail-item__square" aria-hidden="true"></span></button>';
+    var name = esc(s.getAttribute("data-section"));
+    return '<button class="rail-item" type="button" data-target="' + i + '" aria-label="Jump to ' + name + '">' +
+      '<span class="rail-item__label" aria-hidden="true">' + name + "</span>" +
+      '<span class="rail-item__slot" aria-hidden="true"><span class="rail-item__square"></span></span></button>';
   }).join("");
-  $$(".rail-item", rail).forEach(function (b, i) {
-    b.setAttribute("aria-label", "Jump to " + sections[i].getAttribute("data-section"));
+  var railItems = $$(".rail-item", rail);
+  var railCur = 0, boosts = sections.map(function () { return 0; });
+  railItems.forEach(function (b, i) {
     b.addEventListener("click", function () { sections[i].scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" }); });
+  });
+  function paintRail() {
+    railItems.forEach(function (b, i) {
+      var d = Math.min(3, Math.abs(i - railCur));
+      b.style.setProperty("--s", (BASE[d] + boosts[i]) + "px");
+      b.setAttribute("aria-current", String(i === railCur));
+    });
+  }
+  rail.addEventListener("pointermove", function (e) {
+    if (e.pointerType !== "mouse" || reduceMotion) return;
+    railItems.forEach(function (b, i) {
+      var r = b.getBoundingClientRect();
+      var d = Math.abs(e.clientY - (r.top + r.height / 2)) / r.height; // distance in slots
+      boosts[i] = Math.round(BOOST * Math.exp(-(d * d) / 1.4));
+    });
+    paintRail();
+  });
+  rail.addEventListener("pointerleave", function () {
+    boosts = boosts.map(function () { return 0; });
+    paintRail();
   });
   var railTick = false;
   function spy() {
@@ -633,11 +618,8 @@
     var line = window.innerHeight * 0.4, cur = 0;
     sections.forEach(function (s, i) { if (s.getBoundingClientRect().top <= line) cur = i; });
     if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) cur = sections.length - 1;
-    $$(".rail-item", rail).forEach(function (b, i) {
-      var d = Math.abs(i - cur);
-      b.style.setProperty("--s", (d === 0 ? 40 : d === 1 ? 30 : 20) + "px");
-      b.setAttribute("aria-current", String(d === 0));
-    });
+    railCur = cur;
+    paintRail();
   }
   window.addEventListener("scroll", function () { if (!railTick) { railTick = true; requestAnimationFrame(spy); } }, { passive: true });
 
