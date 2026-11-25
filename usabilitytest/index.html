@@ -14,100 +14,27 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/tokens.css">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; background: var(--bg-page); color: var(--text-primary); font-family: var(--font-sans); font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
-    a { color: var(--text-link); }
-    h1, h2, h3, p { margin: 0; }
-    :focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
-    [hidden] { display: none !important; }
-    input, button, textarea { font: inherit; color: inherit; }
-
-    .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 96px; display: flex; flex-direction: column; gap: 24px; }
-    .masthead { display: flex; align-items: baseline; gap: 12px; }
-    .wordmark { font-family: var(--font-serif); font-weight: 600; font-size: 24px; }
-    .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); }
-    h1 { font-family: var(--font-serif); font-weight: 600; font-size: clamp(28px, 5vw, 40px); line-height: 1.15; letter-spacing: -0.5px; margin-top: 4px; }
-    .lead { font-size: 19px; color: var(--text-secondary); margin-top: 8px; }
-
-    .card { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 28px; display: flex; flex-direction: column; gap: 16px; }
-    .card h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.3px; }
-    .card .step { font-size: 13px; font-weight: 700; color: var(--text-stat); letter-spacing: 0.04em; text-transform: uppercase; }
-    .muted { color: var(--text-secondary); font-size: 15px; }
-    ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
-
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .label { font-weight: 700; font-size: 15px; }
-    .req { color: var(--text-tertiary); font-weight: 500; }
-    input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--bg-surface); font-size: 16px; }
-    textarea { min-height: 76px; resize: vertical; }
-    .invalid input[type=text], .invalid .choices { outline: 2px solid #c4314b; outline-offset: 2px; border-radius: var(--radius-md); }
-    .error { color: #c4314b; font-size: 14px; font-weight: 600; }
-    :root[data-theme="dark"] .error { color: #ff8a9b; }
-
-    /* Choice pills (radio buttons styled as buttons) */
-    .choices { display: flex; flex-wrap: wrap; gap: 8px; }
-    .choice { position: relative; }
-    .choice input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-    .choice span { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-full); font-weight: 600; font-size: 15px; background: var(--bg-surface); }
-    .choice input:checked + span { background: var(--action-primary); border-color: var(--action-primary); color: var(--action-on-primary); }
-    .choice input:focus-visible + span { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
-    .choice:hover span { border-color: var(--text-secondary); }
-
-    .format-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .format-cards .choice span { height: auto; padding: 16px; border-radius: var(--radius-md); flex-direction: column; align-items: flex-start; text-align: left; gap: 2px; }
-    .format-cards .choice small { font-weight: 400; font-size: 14px; opacity: 0.8; }
-
-    .links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 24px; border-radius: var(--radius-full); font-weight: 700; font-size: 16px; text-decoration: none; border: 1px solid var(--action-primary); background: var(--action-primary); color: var(--action-on-primary); cursor: pointer; }
-    .button--secondary { background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-strong); }
-    .button:disabled { opacity: 0.5; cursor: progress; }
-
-    .task { border-top: 1px solid var(--border-default); padding-top: 20px; display: flex; flex-direction: column; gap: 12px; }
-    .task:first-of-type { border-top: 0; padding-top: 0; }
-    .task h3 { font-size: 18px; font-weight: 700; }
-    .task h3 span { color: var(--text-stat); margin-right: 6px; }
-    .row2 { display: grid; grid-template-columns: auto 1fr; gap: 12px 24px; align-items: center; }
-    .row2 .label { font-weight: 600; color: var(--text-secondary); }
-
-    .scale-q { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid var(--border-default); }
-    .scale-q:first-of-type { border-top: 0; }
-    .scale-q p { font-weight: 600; }
-    .scale-ends { display: flex; justify-content: space-between; max-width: 300px; font-size: 12px; color: var(--text-tertiary); }
-    .scale .choices { gap: 6px; }
-    .scale .choice span { width: 52px; min-width: 0; padding: 0; }
-
-    .submit-bar { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
-    .thanks { text-align: center; align-items: center; padding: 48px 28px; }
-    .thanks .check { width: 56px; height: 56px; border-radius: 50%; background: var(--data-secondary); color: #fff; font-size: 28px; display: flex; align-items: center; justify-content: center; }
-
-    @media (max-width: 599px) {
-      .wrap { padding: 20px 14px 72px; gap: 16px; }
-      .card { padding: 20px 16px; }
-      .format-cards { grid-template-columns: 1fr; }
-      .row2 { grid-template-columns: 1fr; gap: 6px; }
-      .scale .choice span { width: 48px; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <main class="wrap">
   <header>
     <div class="masthead"><span class="wordmark">goodreads</span><span class="eyebrow">Reading Stats · Usability test</span></div>
-    <h1>Help test a new Reading Stats page</h1>
-    <p class="lead">About 20 minutes, on your own time. Try 8 short tasks, then answer two quick surveys.</p>
+    <h1>Help Me Test My Goodreads Dashboard</h1>
+    <p class="lead">It takes about 20 minutes. You will attempt some short tasks, then answer two quick surveys.</p>
   </header>
 
   <form id="test" novalidate>
-    <div class="wrap" style="padding:0;max-width:none">
+    <div class="wrap form-wrap">
 
       <!-- 1. Welcome -->
       <section class="card" aria-labelledby="h-welcome">
         <p class="step">Step 1</p>
         <h2 id="h-welcome">Welcome</h2>
-        <p><strong>We're testing the design, not you.</strong> There are no wrong answers. If something is confusing, that's exactly what we need to know.</p>
-        <p class="muted">Your answers are used only for a graduate class project. We ask your name so we can follow up if needed. Results are reported without names. You can skip any question that isn't marked required, or stop at any time.</p>
+        <p class="muted">You're here because I invited you to test a project I created as part of my masters program with Art Center School of Design. For this project, I wanted to create a dashboard for the <a href="https://www.goodreads.com" target="_blank">Goodreads.com website</a>. This is something that doesn't currently exist, but that I have always thought should exist. Let's see if I can fix that problem!</p>
+        <p><strong>I am testing the design, not you!</strong> There are no wrong answers. If something is confusing, that's exactly what I need to know.</p>
+        <p class="muted">Your answers are used only for this graduate class project. I only ask your name so that I can follow up if needed. Actual results are reported without names or identifying information. You can skip any question that isn't marked required, or stop at any time.</p>
+        <p class="muted">Thank you for your help! I really appreciate it.</p>
 
         <div class="field" data-field="name">
           <label class="label" for="name">Your name <span class="req">(required)</span></label>
@@ -115,17 +42,17 @@
         </div>
 
         <div class="field" data-field="format">
-          <span class="label" id="format-label">How will you test? <span class="req">(required)</span></span>
+          <span class="label" id="format-label">What screen format will you test? Select one. <span class="req">(required)</span></span>
           <div class="choices format-cards" role="radiogroup" aria-labelledby="format-label">
-            <label class="choice"><input type="radio" name="format" value="Desktop"><span>Desktop<small>A laptop or desktop computer, in a large window</small></span></label>
-            <label class="choice"><input type="radio" name="format" value="Mobile"><span>Mobile<small>A phone, using its web browser</small></span></label>
+            <label class="choice"><input type="radio" name="format" value="Desktop"><span>Desktop</span></label>
+            <label class="choice"><input type="radio" name="format" value="Mobile"><span>Mobile</span></label>
           </div>
         </div>
 
         <div class="field" data-field="consent">
-          <label class="choice" style="display:flex;gap:10px;align-items:flex-start">
-            <input type="checkbox" name="consent" style="position:static;opacity:1;width:20px;height:20px;margin-top:2px">
-            <span style="all:unset;font-size:15px">I've read the above and agree to take part. <span class="req">(required)</span></span>
+          <label class="choice consent-choice">
+            <input class="consent-input" type="checkbox" name="consent">
+            <span class="consent-copy">I've read the above and agree to take part. <span class="req">(required)</span></span>
           </label>
         </div>
       </section>
@@ -147,7 +74,7 @@
           <a class="button" href="https://aoutlaw.github.io/goodreads-dashboard/index.html" target="_blank" rel="noopener">Open the dashboard ↗</a>
         </div>
         <p class="muted">If the dashboard won't load, use the <a href="https://www.figma.com/proto/AfBSsEkNAUlwF0ZJhPzT0v/GIXD501---Goodreads-Dashboard?node-id=175-16043&amp;p=f&amp;viewport=163%2C471%2C0.15&amp;t=feGjT2m9b2hRKiSo-1&amp;scaling=min-zoom&amp;content-scaling=fixed&amp;starting-point-node-id=175%3A11074&amp;show-proto-sidebar=1&amp;page-id=4%3A3" target="_blank" rel="noopener">backup Figma prototype</a> instead.</p>
-        <p><strong>Imagine you are this reader:</strong> a Goodreads member who has logged books since 2021. You've read 137 books, a mix of print, ebooks and audiobooks, and you lean toward science fiction and LitRPG. Your 2026 goal is 10 books. The books and numbers come from a real reader's account.</p>
+        <p><strong>Imagine you are this person:</strong> You are a Goodreads member who has been logging your reading activity since 2021. You've read 137 books, a mix of print, ebooks and audiobooks, and you lean toward science fiction and LitRPG. Your 2026 goal is 10 books. The books and numbers are just sample data taken from my own account and expanded.</p>
         <p class="muted">If you're stuck on a task for about 2 minutes, mark it "No" and move on.</p>
       </section>
 
@@ -270,8 +197,8 @@
     return '<div class="task"><h3><span>' + (i + 1) + "</span>" + esc(t.title) + '</h3><p data-task-text="' + i + '"></p>' +
       '<div class="row2"><span class="label" id="l-' + t.key + 'd">Finished?</span>' + pills(t.key + "_done", ["Yes", "Partly", "No"], "l-" + t.key + "d") +
       '<span class="label" id="l-' + t.key + 'e">How easy?</span><div>' + pills(t.key + "_ease", ["1", "2", "3", "4", "5"], "l-" + t.key + "e") +
-      '<div class="scale-ends" style="max-width:290px"><span>Very hard</span><span>Very easy</span></div></div></div>' +
-      '<label class="field"><span class="label" style="font-weight:600;color:var(--text-secondary)" data-task-notes="' + i + '"></span><input type="text" name="' + t.key + '_notes"></label></div>';
+      '<div class="scale-ends scale-task-ends"><span>Very hard</span><span>Very easy</span></div></div></div>' +
+      '<label class="field"><span class="label task-notes-label" data-task-notes="' + i + '"></span><input type="text" name="' + t.key + '_notes"></label></div>';
   }).join("");
   $("[data-sus]").innerHTML = SUS.map(function (s, i) { return scaleQ("sus" + (i + 1), (i + 1) + ". " + s, true); }).join("");
   $("[data-look]").innerHTML = LOOK.map(function (l) { return scaleQ(l[0], l[1], l[2]); }).join("");
