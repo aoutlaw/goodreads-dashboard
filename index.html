@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading Stats · Goodreads Dashboard</title>
+  <meta name="description" content="A reading stats dashboard concept for Goodreads, built from a Goodreads library export.">
+  <script>
+    // Apply the saved or device theme before first paint, so the page never flashes the wrong colors.
+    (function () {
+      var pref = localStorage.getItem("gr-theme") || "auto";
+      var dark = pref === "dark" || (pref === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;1,8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <button class="icon-button menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <a class="wordmark" href="#" aria-label="Goodreads home">goodreads</a>
+      <nav class="site-nav" id="mobile-nav" aria-label="Main">
+        <a href="#">Home</a>
+        <a href="#" aria-current="page">My Books</a>
+        <a href="#">Browse <span aria-hidden="true">▾</span></a>
+        <a href="#">Community <span aria-hidden="true">▾</span></a>
+      </nav>
+      <div class="site-header__right">
+        <label class="search">
+          <span class="visually-hidden">Search books</span>
+          <input type="search" placeholder="Search books">
+        </label>
+        <div class="popover-wrap">
+          <button class="avatar-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="profile-menu" data-popover="profile-menu">
+            <span class="avatar" aria-hidden="true"></span>
+            <span class="caret" aria-hidden="true">▾</span>
+            <span class="visually-hidden">Profile and appearance</span>
+          </button>
+          <div class="popover profile-menu" id="profile-menu" hidden>
+            <div class="profile-menu__who">
+              <span class="avatar avatar--lg" aria-hidden="true"></span>
+              <div><strong data-user-name></strong><a href="#" data-user-link>View profile</a></div>
+            </div>
+            <ul class="menu-list">
+              <li><a href="#">Profile</a></li>
+              <li><a href="#">Friends</a></li>
+              <li><a href="#overview">Reading Challenge</a></li>
+              <li><a href="#">Year in Books</a></li>
+              <li><a href="#main" aria-current="page">Reading Stats</a></li>
+            </ul>
+            <fieldset class="appearance">
+              <legend>Appearance</legend>
+              <label class="radio"><input type="radio" name="theme" value="auto"><span><span class="radio__label">Automatic</span><span class="radio__help">Matches your device: light by day, dark at night</span></span></label>
+              <label class="radio"><input type="radio" name="theme" value="light"><span><span class="radio__label">Light</span></span></label>
+              <label class="radio"><input type="radio" name="theme" value="dark"><span><span class="radio__label">Dark</span></span></label>
+            </fieldset>
+            <ul class="menu-list">
+              <li><a href="#">Account settings</a></li>
+              <li><a href="#">Help</a></li>
+              <li><a href="#">Sign out</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="title-row">
+      <div>
+        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="#">My Books</a><span aria-hidden="true">›</span><span aria-current="page">Reading Stats</span></nav>
+        <h1 class="page-title">Your reading, at a glance</h1>
+      </div>
+      <div class="popover-wrap time-range">
+        <button class="dropdown" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="time-range-menu" data-popover="time-range-menu">
+          <span class="dropdown__label">Showing</span>
+          <span class="dropdown__value" data-time-range-label>All time</span>
+          <span class="dropdown__chevron" aria-hidden="true">▾</span>
+        </button>
+        <div class="popover time-range__menu" id="time-range-menu" hidden>
+          <p class="eyebrow" id="time-range-heading">Show data from</p>
+          <div role="radiogroup" aria-labelledby="time-range-heading" data-time-range-options></div>
+        </div>
+      </div>
+    </div>
+
+    <section class="card hero" id="overview" aria-label="Overview" data-section="Overview">
+      <div class="hero__stats" data-hero-stats></div>
+      <div class="hero__challenge" data-challenge></div>
+    </section>
+
+    <div class="row row--two">
+      <section class="card" id="reading-now" aria-labelledby="h-reading" data-section="Reading now">
+        <div class="section-header">
+          <h2 class="section-title" id="h-reading">Currently Reading</h2>
+          <a class="text-link" href="#" data-shelf-link>View shelf <span aria-hidden="true">›</span></a>
+        </div>
+        <div class="chips" role="group" aria-label="Filter by format" data-format-filter></div>
+        <div class="current-list" data-current-list></div>
+      </section>
+
+      <section class="card" id="over-time" aria-labelledby="h-years" data-section="Over time">
+        <div class="section-header">
+          <h2 class="section-title" id="h-years">Books Per Year</h2>
+          <a class="text-link" href="#">All years <span aria-hidden="true">›</span></a>
+        </div>
+        <p class="hint">Tap a year to see what you read.</p>
+        <div class="year-chart" role="group" aria-label="Books read per year" data-year-chart></div>
+        <h3 class="subheading" data-year-heading>Books from 2025</h3>
+        <div class="carousel" data-carousel="year" aria-label="Books from the selected year"></div>
+      </section>
+    </div>
+
+    <section class="card genres" id="genres" aria-labelledby="h-genres" data-section="Genres">
+      <div class="section-header">
+        <h2 class="section-title" id="h-genres">Your Top Genres</h2>
+        <a class="text-link" href="#">All genres <span aria-hidden="true">›</span></a>
+      </div>
+      <p class="hint" data-genre-hint></p>
+      <div class="genres__body">
+        <div class="genre-list" role="tablist" aria-label="Genres" aria-orientation="vertical" data-genre-list></div>
+        <div class="genre-panel" role="tabpanel" data-genre-panel></div>
+      </div>
+    </section>
+
+    <section class="recs" id="for-you" aria-labelledby="h-recs" data-section="For you">
+      <div class="section-header recs__header">
+        <h2 class="section-title" id="h-recs">Because You Love <em data-recs-genre></em></h2>
+        <div class="chips" role="group" aria-label="Recommendation type" data-rec-filter></div>
+      </div>
+      <div class="carousel carousel--recs" data-carousel="recs" aria-label="Recommended books"></div>
+    </section>
+
+    <div class="row row--three" id="habits" data-section="Habits">
+      <section class="card" aria-labelledby="h-ratings">
+        <h2 class="section-title" id="h-ratings">Your Average Rating</h2>
+        <div data-ratings></div>
+      </section>
+      <section class="card" aria-labelledby="h-formats">
+        <h2 class="section-title" id="h-formats">Print, Ebook, or Audio</h2>
+        <div data-formats></div>
+      </section>
+      <section class="card" aria-labelledby="h-listen">
+        <h2 class="section-title" id="h-listen">When You Listen</h2>
+        <p class="hint">Audiobook listening by hour of day, last 12 months.</p>
+        <div data-listening></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <a href="#">About</a><a href="#">Careers</a><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Help</a><a href="#">Mobile app</a>
+    </div>
+  </footer>
+
+  <nav class="section-rail" aria-label="Jump to section" data-section-rail></nav>
+
+  <dialog class="modal" id="progress-dialog" aria-labelledby="progress-title">
+    <form method="dialog" class="modal__body" data-progress-form novalidate>
+      <h2 class="modal__title" id="progress-title">Update progress</h2>
+      <div class="modal__book" data-progress-book></div>
+      <label class="field">
+        <span class="field__label">Current page</span>
+        <span class="field__row"><input type="number" name="page" min="0" inputmode="numeric" required> <span class="field__suffix" data-progress-total></span></span>
+        <span class="field__error" data-progress-error hidden></span>
+      </label>
+      <div class="modal__actions">
+        <button class="button button--secondary" type="button" data-close>Cancel</button>
+        <button class="button button--primary" type="submit" value="save">Save progress</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="goal-dialog" aria-labelledby="goal-title">
+    <form method="dialog" class="modal__body" data-goal-form novalidate>
+      <h2 class="modal__title" id="goal-title">Edit your <span data-goal-year></span> goal</h2>
+      <p class="modal__help">How many books do you want to read this year?</p>
+      <label class="field">
+        <span class="field__label">Goal</span>
+        <span class="field__row"><input type="number" name="goal" min="1" max="999" inputmode="numeric" required> <span class="field__suffix">books</span></span>
+      </label>
+      <div class="modal__actions">
+        <button class="button button--secondary" type="button" data-close>Cancel</button>
+        <button class="button button--primary" type="submit" value="save">Save goal</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" role="status" aria-live="polite" data-toast hidden></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

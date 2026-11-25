@@ -1,0 +1,110 @@
+/* Design tokens, taken from the Figma variables (Option G: Ink + Blue).
+   Light is the default; dark applies when the device prefers dark (Automatic)
+   or when the person picks Dark in the profile menu (data-theme="dark"). */
+:root {
+  color-scheme: light;
+  --bg-page: #f6f5f2;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f6f5f2;
+  --bg-header: #ffffff;
+  --bg-inverse: #22252b;
+  --bg-cover: #e8e6e1;
+  --text-primary: #1f2227;
+  --text-secondary: #5d6068;
+  --text-tertiary: #74777e;
+  --text-inverse: #ffffff;
+  --text-link: #1f6f8b;
+  --text-stat: #0b9bc9;
+  --border-default: #dcd9d3;
+  --border-strong: #c9c7c2;
+  --action-primary: #22252b;
+  --action-on-primary: #ffffff;
+  --action-secondary: #ffffff;
+  --data-primary: #0b9bc9;
+  --data-primary-soft: #73cbf0;
+  --data-secondary: #02985f;
+  --data-highlight: #7f36bc;
+  --data-highlight-soft: #cdaef2;
+  --data-track: #edebe7;
+  --focus-ring: #1f6f8b;
+  --star: #f5a623;
+  --scrim: rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 12px 32px rgba(20, 22, 26, 0.16), 0 2px 6px rgba(20, 22, 26, 0.08);
+
+  /* Type */
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Layout: Desktop 1440 values; overridden per breakpoint below */
+  --content-max: 1200px;
+  --page-margin: 120px;
+  --section-gap: 48px;
+  --card-padding: 32px;
+  --card-gap: 24px;
+  --type-h1: 40px;
+  --type-section: 32px;
+  --type-h3: 22px;
+  --type-body-lg: 20px;
+  --type-body: 18px;
+  --type-label: 16px;
+  --type-caption: 14px;
+  --type-stat-hero: 104px;
+  --type-stat-xl: 72px;
+  --type-stat-lg: 44px;
+  --rec-width: 168px;
+  --rec-gap: 24px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  --ease-out: cubic-bezier(0.25, 0.25, 0.45, 1);
+}
+
+@media (max-width: 1399px) {
+  :root { --content-max: 1120px; --page-margin: 80px; --section-gap: 40px; --card-padding: 28px; --card-gap: 20px;
+    --type-h1: 36px; --type-section: 30px; --type-h3: 21px; --type-body-lg: 19px;
+    --type-stat-hero: 96px; --type-stat-xl: 64px; --type-stat-lg: 40px; --rec-width: 152px; }
+}
+@media (max-width: 1023px) {
+  :root { --content-max: 704px; --page-margin: 32px; --section-gap: 32px; --card-padding: 24px; --card-gap: 16px;
+    --type-h1: 32px; --type-section: 28px; --type-h3: 20px; --type-body-lg: 18px; --type-body: 17px;
+    --type-stat-hero: 80px; --type-stat-xl: 56px; --type-stat-lg: 36px; --rec-width: 136px; --rec-gap: 16px; }
+}
+@media (max-width: 599px) {
+  :root { --content-max: 100%; --page-margin: 16px; --section-gap: 24px; --card-padding: 16px; --card-gap: 12px;
+    --type-h1: 28px; --type-section: 24px; --type-h3: 19px; --type-label: 15px;
+    --type-stat-hero: 64px; --type-stat-xl: 44px; --type-stat-lg: 30px; --rec-width: 112px; --rec-gap: 12px; }
+}
+
+/* Dark (Option G night) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-page: #131417;
+  --bg-surface: #1c1d21;
+  --bg-subtle: #24262b;
+  --bg-header: #131417;
+  --bg-inverse: #f2f2f0;
+  --bg-cover: #2c2e33;
+  --text-primary: #f2f2f0;
+  --text-secondary: #b4b6bc;
+  --text-tertiary: #8b8e95;
+  --text-inverse: #131417;
+  --text-link: #8cc5da;
+  --text-stat: #0ba2d1;
+  --border-default: #2e3036;
+  --border-strong: #4a4d54;
+  --action-primary: #f2f2f0;
+  --action-on-primary: #131417;
+  --action-secondary: #1c1d21;
+  --data-primary: #0ba2d1;
+  --data-primary-soft: #066482;
+  --data-secondary: #059f64;
+  --data-highlight: #914ad0;
+  --data-highlight-soft: #684b88;
+  --data-track: #2e3036;
+  --focus-ring: #8cc5da;
+  --star: #e4ae3a;
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,4 @@
+.DS_Store
+__pycache__/
+# Uncomment to keep your raw Goodreads export out of the repository:
+# data/goodreads_library_export.csv
