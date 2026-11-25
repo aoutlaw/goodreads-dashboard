@@ -104,7 +104,7 @@
       </section>
 
       <section class="submit-bar">
-        <p class="error" data-error hidden></p>
+        <p class="error" data-error role="alert" hidden></p>
         <button class="button" type="submit" data-submit>Send my answers</button>
         <p class="muted" data-preview-note hidden></p>
       </section>
@@ -244,7 +244,7 @@
     save();
     if (e.target.name === "format") applyFormat();
     var f = e.target.closest("[data-field]");
-    if (f) f.classList.remove("invalid");
+    if (f) setFieldError(f, false);
   });
   form.addEventListener("change", function (e) { save(); if (e.target.name === "format") applyFormat(); });
 
@@ -265,16 +265,35 @@
     return String(total * 2.5);
   }
 
+  // Mark a required question as missing: text message, aria-invalid, and the red outline (WCAG 3.3.1, 1.4.1).
+  function setFieldError(f, on) {
+    f.classList.toggle("invalid", on);
+    var msg = f.querySelector(".field-error");
+    var target = f.querySelector('[role="radiogroup"], input[type="text"], input[type="checkbox"]');
+    if (on && !msg) {
+      msg = document.createElement("p");
+      msg.className = "field-error";
+      msg.id = "err-" + f.getAttribute("data-field");
+      msg.textContent = "Please answer this question.";
+      f.appendChild(msg);
+    }
+    if (msg) msg.hidden = !on;
+    if (target) {
+      if (on) { target.setAttribute("aria-invalid", "true"); target.setAttribute("aria-describedby", "err-" + f.getAttribute("data-field")); }
+      else { target.removeAttribute("aria-invalid"); target.removeAttribute("aria-describedby"); }
+    }
+  }
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var required = ["name", "format", "consent"];
     for (var i = 1; i <= 10; i++) required.push("sus" + i);
     LOOK.forEach(function (l) { if (l[2]) required.push(l[0]); });
     var missing = required.filter(function (n) { return !value(n); });
-    $$("[data-field]").forEach(function (f) { f.classList.toggle("invalid", missing.indexOf(f.getAttribute("data-field")) >= 0); });
+    $$("[data-field]").forEach(function (f) { setFieldError(f, missing.indexOf(f.getAttribute("data-field")) >= 0); });
     var err = $("[data-error]");
     if (missing.length) {
-      err.textContent = "Please answer the " + missing.length + (missing.length === 1 ? " required question" : " required questions") + " marked in red.";
+      err.textContent = "Please answer the " + missing.length + (missing.length === 1 ? " required question" : " required questions") + ". Each one is marked \"Please answer this question\".";
       err.hidden = false;
       var first = $('[data-field="' + missing[0] + '"]');
       first.scrollIntoView({ behavior: "smooth", block: "center" });

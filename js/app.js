@@ -51,7 +51,7 @@
     return '<div class="cover"><img src="' + esc(src) + '" alt="" loading="lazy" decoding="async"></div>';
   }
   function starsHtml(n) {
-    var out = '<span class="stars" aria-label="' + n + ' of 5 stars">';
+    var out = '<span class="stars" role="img" aria-label="' + n + ' of 5 stars">';
     for (var i = 1; i <= 5; i++) out += i <= n ? "★" : '<span class="off">★</span>';
     return out + "</span>";
   }
@@ -64,7 +64,9 @@
   // ---------- Toast ----------
   var toastEl = $("[data-toast]");
   var toastTimer;
+  var announcer = $("[data-announce]");
   function toast(msg) {
+    if (announcer) { announcer.textContent = ""; setTimeout(function () { announcer.textContent = msg; }, 50); }
     toastEl.innerHTML = '<div class="toast__inner"><span class="toast__check" aria-hidden="true">✓</span>' + esc(msg) + "</div>";
     toastEl.hidden = false;
     clearTimeout(toastTimer);
@@ -240,7 +242,7 @@
     $("[data-current-list]").innerHTML = list.map(function (b) {
       var p = pageOf(b), pct = b.pages ? Math.round((p / b.pages) * 100) : 0;
       return '<article class="current">' +
-        '<a class="current__cover" href="' + esc(bookUrl(b.title)) + '" target="_blank" rel="noopener">' + coverHtml(b.title, b.cover) + "</a>" +
+        '<a class="current__cover" href="' + esc(bookUrl(b.title)) + '" target="_blank" rel="noopener" aria-label="' + esc(b.title) + ' on Goodreads (opens in a new tab)">' + coverHtml(b.title, b.cover) + "</a>" +
         '<div class="current__details">' +
           '<h3 class="current__title">' + esc(b.title) + "</h3>" +
           '<p class="current__author">by ' + esc(b.author) + " · " + esc(b.format) + "</p>" +
@@ -398,8 +400,8 @@
     var chart = $("[data-year-chart]");
     chart.innerHTML = yearList.map(function (y, i) {
       var n = years[y].length;
-      return '<button class="year-bar' + (y === String(YEAR) ? " year-bar--current" : "") + '" type="button" data-year="' + y + '" aria-pressed="' + (y === selectedYear) + '" aria-label="' + y + ": " + n + ' books">' +
-        '<span class="year-bar__count">' + n + "</span>" +
+      return '<button class="year-bar' + (y === String(YEAR) ? " year-bar--current" : "") + '" type="button" data-year="' + y + '" aria-pressed="' + (y === selectedYear) + '">' +
+        '<span class="year-bar__count">' + n + '<span class="visually-hidden"> books in</span></span>' +
         '<span class="year-bar__fill" style="--h:' + Math.max(4, (n / maxYear) * 100) + "%;animation-delay:" + i * 40 + 'ms"></span>' +
         '<span class="year-bar__year">' + (y === String(YEAR) ? y + "*" : y) + "</span></button>";
     }).join("");
@@ -554,6 +556,14 @@
     var p1 = polar(r1, a0), p2 = polar(r1, a1), p3 = polar(r0, a1), p4 = polar(r0, a0);
     return "M" + p1 + "A" + r1 + "," + r1 + " 0 0 1 " + p2 + "L" + p3 + "A" + r0 + "," + r0 + " 0 0 0 " + p4 + "Z";
   }
+  // Screen-reader version of the clock: listening by hour as a share of the busiest hour.
+  function hourTable() {
+    var name = function (h) { return h === 0 ? "12 am" : h < 12 ? h + " am" : h === 12 ? "12 pm" : (h - 12) + " pm"; };
+    return '<div class="visually-hidden"><table><caption>Audiobook listening by hour, as a percent of the busiest hour (' + esc(C.listeningPeak.hour) + ')</caption>' +
+      "<thead><tr><th scope=\"col\">Hour</th><th scope=\"col\">Listening</th></tr></thead><tbody>" +
+      C.listening.map(function (v, h) { return "<tr><th scope=\"row\">" + name(h) + "</th><td>" + Math.round(v * 100) + "%</td></tr>"; }).join("") +
+      "</tbody></table></div>";
+  }
   function renderListening() {
     var peakHours = [15, 16, 17];
     var bars = C.listening.map(function (v, h) {
@@ -566,8 +576,9 @@
       return '<text class="clock__label" x="' + (CX + l[2] * 30) + '" y="' + (CX + l[3] * 28) + '" text-anchor="middle" dominant-baseline="central">' + l[0] + "</text>";
     }).join("");
     $("[data-listening]").innerHTML =
-      '<div class="clock"><svg viewBox="0 0 320 320" role="img" aria-label="Listening by hour of day. Peak at ' + esc(C.listeningPeak.hour) + '.">' + bars + labels + "</svg></div>" +
-      '<p class="legend-inline legend-inline--center"><span><i class="swatch swatch--dot" style="background:var(--data-primary)"></i>Afternoon, 3 to 6 pm</span><span><i class="swatch swatch--dot" style="background:var(--data-primary-soft)"></i>Rest of the day</span></p>' +
+      '<div class="clock"><svg viewBox="0 0 320 320" aria-hidden="true">' + bars + labels + "</svg></div>" +
+      hourTable() +
+      '<p class="legend-inline legend-inline--center"><span><i class="swatch swatch--dot" style="background:var(--clock-peak)"></i>Afternoon, 3 to 6 pm</span><span><i class="swatch swatch--dot" style="background:var(--clock-soft)"></i>Rest of the day</span></p>' +
       '<div class="clock-stats"><div><strong>' + esc(C.listeningPeak.hour) + "</strong><span>your peak hour</span></div>" +
         "<div><strong>" + esc(C.listeningPeak.share) + "</strong><span>" + esc(C.listeningPeak.window) + "</span></div></div>" +
       '<p class="insight">' + esc(C.listeningInsight) + "</p>";
@@ -590,7 +601,12 @@
   var railItems = $$(".rail-item", rail);
   var railCur = 0, boosts = sections.map(function () { return 0; });
   railItems.forEach(function (b, i) {
-    b.addEventListener("click", function () { sections[i].scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" }); });
+    b.addEventListener("click", function () {
+      // Overview goes to the very top (title and time range included). Other stops land just under the sticky header.
+      var header = document.querySelector(".site-header");
+      var y = i === 0 ? 0 : sections[i].getBoundingClientRect().top + window.pageYOffset - (header ? header.offsetHeight : 0) - 16;
+      window.scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? "auto" : "smooth" });
+    });
   });
   function paintRail() {
     railItems.forEach(function (b, i) {
@@ -608,6 +624,9 @@
     });
     paintRail();
   });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") rail.classList.add("is-dismissed"); });
+  rail.addEventListener("pointerenter", function () { rail.classList.remove("is-dismissed"); });
+  rail.addEventListener("focusin", function () { rail.classList.remove("is-dismissed"); });
   rail.addEventListener("pointerleave", function () {
     boosts = boosts.map(function () { return 0; });
     paintRail();

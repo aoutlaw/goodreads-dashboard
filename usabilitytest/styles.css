@@ -17,14 +17,14 @@ h1 { font-family: var(--font-serif); font-weight: 600; font-size: clamp(36px, 6v
 
 .card { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 28px; display: flex; flex-direction: column; gap: 16px; }
 .card h2 { font-size: 30px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.15; }
-.card .step { font-size: 16px; font-weight: 800; color: var(--text-stat); letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.2; }
+.card .step { font-size: 16px; font-weight: 800; color: var(--text-accent); letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.2; }
 .muted { color: var(--text-secondary); font-size: 15px; }
 ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .label { font-weight: 700; font-size: 16px; }
 .req { color: var(--text-tertiary); font-weight: 500; }
-input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--bg-surface); font-size: 16px; }
+input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-control); border-radius: var(--radius-md); background: var(--bg-surface); font-size: 16px; }
 textarea { min-height: 76px; resize: vertical; }
 .invalid input[type=text], .invalid .choices { outline: 2px solid #c4314b; outline-offset: 2px; border-radius: var(--radius-md); }
 .error { color: #c4314b; font-size: 14px; font-weight: 600; }
@@ -53,7 +53,7 @@ textarea { min-height: 76px; resize: vertical; }
 .task { border-top: 1px solid var(--border-default); padding-top: 20px; display: flex; flex-direction: column; gap: 12px; }
 .task:first-of-type { border-top: 0; padding-top: 0; }
 .task h3 { font-size: 22px; font-weight: 700; line-height: 1.25; }
-.task h3 span { color: var(--text-stat); margin-right: 6px; }
+.task h3 span { color: var(--text-accent); margin-right: 6px; }
 .task-notes-label { font-weight: 600; color: var(--text-secondary); }
 .row2 { display: grid; grid-template-columns: auto 1fr; gap: 12px 24px; align-items: center; }
 .row2 .label { font-weight: 600; color: var(--text-secondary); }
@@ -83,3 +83,7 @@ textarea { min-height: 76px; resize: vertical; }
   .row2 { grid-template-columns: 1fr; gap: 6px; }
   .scale .choice span { width: 48px; }
 }
+
+/* Per-question error text (WCAG 3.3.1) */
+.field-error { color: #c4314b; font-size: 14px; font-weight: 600; margin: 4px 0 0; }
+:root[data-theme="dark"] .field-error { color: #ff8a9b; }

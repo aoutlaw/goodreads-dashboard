@@ -11,12 +11,14 @@
   --bg-cover: #e8e6e1;
   --text-primary: #1f2227;
   --text-secondary: #5d6068;
-  --text-tertiary: #74777e;
+  --text-tertiary: #686b72;      /* 5.3:1 on white, 4.9:1 on page (WCAG 1.4.3) */
+  --text-accent: #0a7fa6;        /* blue for small text: 4.6:1 on white */
   --text-inverse: #ffffff;
   --text-link: #1f6f8b;
   --text-stat: #0b9bc9;
   --border-default: #dcd9d3;
   --border-strong: #c9c7c2;
+  --border-control: #85888e;     /* 3:1 edge for fields, outlined controls, inactive pills (WCAG 1.4.11) */
   --action-primary: #22252b;
   --action-on-primary: #ffffff;
   --action-secondary: #ffffff;
@@ -28,6 +30,9 @@
   --data-track: #edebe7;
   --focus-ring: #1f6f8b;
   --star: #f5a623;
+  --star-edge: #a16a00;          /* outline that gives yellow stars 3:1 against white */
+  --clock-soft: #3a8fb8;         /* listening clock wedges, 3:1 against their track */
+  --clock-peak: #08688a;
   --scrim: rgba(0, 0, 0, 0.55);
   --shadow-pop: 0 12px 32px rgba(20, 22, 26, 0.16), 0 2px 6px rgba(20, 22, 26, 0.08);
 
@@ -90,11 +95,13 @@
   --text-primary: #f2f2f0;
   --text-secondary: #b4b6bc;
   --text-tertiary: #8b8e95;
+  --text-accent: #0ba2d1;
   --text-inverse: #131417;
   --text-link: #8cc5da;
   --text-stat: #0ba2d1;
   --border-default: #2e3036;
   --border-strong: #4a4d54;
+  --border-control: #6a6d75;
   --action-primary: #f2f2f0;
   --action-on-primary: #131417;
   --action-secondary: #1c1d21;
@@ -106,5 +113,8 @@
   --data-track: #2e3036;
   --focus-ring: #8cc5da;
   --star: #e4ae3a;
+  --star-edge: #e4ae3a;
+  --clock-soft: #1688b3;
+  --clock-peak: #5cc3ec;
   --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.5);
 }

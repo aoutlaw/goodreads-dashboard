@@ -58,6 +58,13 @@
       if (first && e.detail === 0) first.focus(); // keyboard open: move focus into the menu
     });
     menu.addEventListener("click", function (e) { if (!e.target.closest("a")) e.stopPropagation(); });
+    // Close when keyboard focus moves out of the menu and its button.
+    [button, menu].forEach(function (el) {
+      el.addEventListener("focusout", function (e) {
+        var to = e.relatedTarget;
+        if (openPop && openPop.menu === menu && to && !menu.contains(to) && to !== button) closePop();
+      });
+    });
   });
   document.addEventListener("click", function () { closePop(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closePop(true); });
