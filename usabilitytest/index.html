@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Usability Test · Goodreads Reading Stats</title>
+  <script>
+    (function () {
+      var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg-page); color: var(--text-primary); font-family: var(--font-sans); font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    a { color: var(--text-link); }
+    h1, h2, h3, p { margin: 0; }
+    :focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
+    [hidden] { display: none !important; }
+    input, button, textarea { font: inherit; color: inherit; }
+
+    .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 96px; display: flex; flex-direction: column; gap: 24px; }
+    .masthead { display: flex; align-items: baseline; gap: 12px; }
+    .wordmark { font-family: var(--font-serif); font-weight: 600; font-size: 24px; }
+    .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); }
+    h1 { font-family: var(--font-serif); font-weight: 600; font-size: clamp(28px, 5vw, 40px); line-height: 1.15; letter-spacing: -0.5px; margin-top: 4px; }
+    .lead { font-size: 19px; color: var(--text-secondary); margin-top: 8px; }
+
+    .card { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+    .card h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.3px; }
+    .card .step { font-size: 13px; font-weight: 700; color: var(--text-stat); letter-spacing: 0.04em; text-transform: uppercase; }
+    .muted { color: var(--text-secondary); font-size: 15px; }
+    ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .label { font-weight: 700; font-size: 15px; }
+    .req { color: var(--text-tertiary); font-weight: 500; }
+    input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--bg-surface); font-size: 16px; }
+    textarea { min-height: 76px; resize: vertical; }
+    .invalid input[type=text], .invalid .choices { outline: 2px solid #c4314b; outline-offset: 2px; border-radius: var(--radius-md); }
+    .error { color: #c4314b; font-size: 14px; font-weight: 600; }
+    :root[data-theme="dark"] .error { color: #ff8a9b; }
+
+    /* Choice pills (radio buttons styled as buttons) */
+    .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+    .choice { position: relative; }
+    .choice input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+    .choice span { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-full); font-weight: 600; font-size: 15px; background: var(--bg-surface); }
+    .choice input:checked + span { background: var(--action-primary); border-color: var(--action-primary); color: var(--action-on-primary); }
+    .choice input:focus-visible + span { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+    .choice:hover span { border-color: var(--text-secondary); }
+
+    .format-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .format-cards .choice span { height: auto; padding: 16px; border-radius: var(--radius-md); flex-direction: column; align-items: flex-start; text-align: left; gap: 2px; }
+    .format-cards .choice small { font-weight: 400; font-size: 14px; opacity: 0.8; }
+
+    .links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 24px; border-radius: var(--radius-full); font-weight: 700; font-size: 16px; text-decoration: none; border: 1px solid var(--action-primary); background: var(--action-primary); color: var(--action-on-primary); cursor: pointer; }
+    .button--secondary { background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-strong); }
+    .button:disabled { opacity: 0.5; cursor: progress; }
+
+    .task { border-top: 1px solid var(--border-default); padding-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .task:first-of-type { border-top: 0; padding-top: 0; }
+    .task h3 { font-size: 18px; font-weight: 700; }
+    .task h3 span { color: var(--text-stat); margin-right: 6px; }
+    .row2 { display: grid; grid-template-columns: auto 1fr; gap: 12px 24px; align-items: center; }
+    .row2 .label { font-weight: 600; color: var(--text-secondary); }
+
+    .scale-q { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid var(--border-default); }
+    .scale-q:first-of-type { border-top: 0; }
+    .scale-q p { font-weight: 600; }
+    .scale-ends { display: flex; justify-content: space-between; max-width: 300px; font-size: 12px; color: var(--text-tertiary); }
+    .scale .choices { gap: 6px; }
+    .scale .choice span { width: 52px; min-width: 0; padding: 0; }
+
+    .submit-bar { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+    .thanks { text-align: center; align-items: center; padding: 48px 28px; }
+    .thanks .check { width: 56px; height: 56px; border-radius: 50%; background: var(--data-secondary); color: #fff; font-size: 28px; display: flex; align-items: center; justify-content: center; }
+
+    @media (max-width: 599px) {
+      .wrap { padding: 20px 14px 72px; gap: 16px; }
+      .card { padding: 20px 16px; }
+      .format-cards { grid-template-columns: 1fr; }
+      .row2 { grid-template-columns: 1fr; gap: 6px; }
+      .scale .choice span { width: 48px; }
+    }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="masthead"><span class="wordmark">goodreads</span><span class="eyebrow">Reading Stats · Usability test</span></div>
+    <h1>Help test a new Reading Stats page</h1>
+    <p class="lead">About 20 minutes, on your own time. Try 8 short tasks, then answer two quick surveys.</p>
+  </header>
+
+  <form id="test" novalidate>
+    <div class="wrap" style="padding:0;max-width:none">
+
+      <!-- 1. Welcome -->
+      <section class="card" aria-labelledby="h-welcome">
+        <p class="step">Step 1</p>
+        <h2 id="h-welcome">Welcome</h2>
+        <p><strong>We're testing the design, not you.</strong> There are no wrong answers. If something is confusing, that's exactly what we need to know.</p>
+        <p class="muted">Your answers are used only for a graduate class project. We ask your name so we can follow up if needed. Results are reported without names. You can skip any question that isn't marked required, or stop at any time.</p>
+
+        <div class="field" data-field="name">
+          <label class="label" for="name">Your name <span class="req">(required)</span></label>
+          <input type="text" id="name" name="name" autocomplete="name">
+        </div>
+
+        <div class="field" data-field="format">
+          <span class="label" id="format-label">How will you test? <span class="req">(required)</span></span>
+          <div class="choices format-cards" role="radiogroup" aria-labelledby="format-label">
+            <label class="choice"><input type="radio" name="format" value="Desktop"><span>Desktop<small>A laptop or desktop computer, in a large window</small></span></label>
+            <label class="choice"><input type="radio" name="format" value="Mobile"><span>Mobile<small>A phone, using its web browser</small></span></label>
+          </div>
+        </div>
+
+        <div class="field" data-field="consent">
+          <label class="choice" style="display:flex;gap:10px;align-items:flex-start">
+            <input type="checkbox" name="consent" style="position:static;opacity:1;width:20px;height:20px;margin-top:2px">
+            <span style="all:unset;font-size:15px">I've read the above and agree to take part. <span class="req">(required)</span></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 2. Before you start -->
+      <section class="card" aria-labelledby="h-setup">
+        <p class="step">Step 2</p>
+        <h2 id="h-setup">Before you start</h2>
+        <p data-only="none" class="muted">Choose Desktop or Mobile above to see your setup steps.</p>
+        <ul class="plain" data-only="Desktop" hidden>
+          <li>Use a laptop or desktop computer with the browser window as large as it goes.</li>
+          <li>Open the dashboard in a new tab with the button below. Keep this page open in its own tab and switch back after each task to record your answers.</li>
+        </ul>
+        <ul class="plain" data-only="Mobile" hidden>
+          <li>Use your phone, holding it upright.</li>
+          <li>Open the dashboard with the button below. It opens in a new tab. After each task, switch back to this tab to record your answers. Your answers are saved as you go, so nothing is lost if the page reloads.</li>
+        </ul>
+        <div class="links">
+          <a class="button" href="https://aoutlaw.github.io/goodreads-dashboard/index.html" target="_blank" rel="noopener">Open the dashboard ↗</a>
+        </div>
+        <p class="muted">If the dashboard won't load, use the <a href="https://www.figma.com/proto/AfBSsEkNAUlwF0ZJhPzT0v/GIXD501---Goodreads-Dashboard?node-id=175-16043&amp;p=f&amp;viewport=163%2C471%2C0.15&amp;t=feGjT2m9b2hRKiSo-1&amp;scaling=min-zoom&amp;content-scaling=fixed&amp;starting-point-node-id=175%3A11074&amp;show-proto-sidebar=1&amp;page-id=4%3A3" target="_blank" rel="noopener">backup Figma prototype</a> instead.</p>
+        <p><strong>Imagine you are this reader:</strong> a Goodreads member who has logged books since 2021. You've read 137 books, a mix of print, ebooks and audiobooks, and you lean toward science fiction and LitRPG. Your 2026 goal is 10 books. The books and numbers come from a real reader's account.</p>
+        <p class="muted">If you're stuck on a task for about 2 minutes, mark it "No" and move on.</p>
+      </section>
+
+      <!-- 3. Tasks -->
+      <section class="card" aria-labelledby="h-tasks">
+        <p class="step">Step 3</p>
+        <h2 id="h-tasks">Tasks</h2>
+        <p class="muted">Do the tasks in order. After each one, come back here and answer its questions.</p>
+        <div data-tasks></div>
+      </section>
+
+      <!-- 4. SUS -->
+      <section class="card" aria-labelledby="h-sus">
+        <p class="step">Step 4</p>
+        <h2 id="h-sus">Survey 1: Ease of use</h2>
+        <p class="muted">Go with your first reaction. 1 = strongly disagree, 5 = strongly agree. All 10 are required.</p>
+        <div class="scale" data-sus></div>
+      </section>
+
+      <!-- 5. Look and feel + questions -->
+      <section class="card" aria-labelledby="h-look">
+        <p class="step">Step 5</p>
+        <h2 id="h-look">Survey 2: Look, feel, and your thoughts</h2>
+        <p class="muted">1 = strongly disagree, 5 = strongly agree.</p>
+        <div class="scale" data-look></div>
+        <p class="label" style="margin-top:8px">A few short questions. A sentence or two is plenty.</p>
+        <div data-open style="display:flex;flex-direction:column;gap:16px"></div>
+      </section>
+
+      <section class="submit-bar">
+        <p class="error" data-error hidden></p>
+        <button class="button" type="submit" data-submit>Send my answers</button>
+        <p class="muted" data-preview-note hidden></p>
+      </section>
+    </div>
+  </form>
+
+  <section class="card thanks" data-thanks hidden aria-live="polite">
+    <div class="check" aria-hidden="true">✓</div>
+    <h2>Thank you!</h2>
+    <p class="muted">Your answers were sent. You can close this page.</p>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DASH = "the dashboard";
+  var TASKS = [
+    { key: "t1", title: "Find your stats",
+      text: "Before you scroll, look at the top of the page. Goodreads now has a stats page. Where would you click to find it? Try it.",
+      notes: "Where did you click first?" },
+    { key: "t2", title: "Check in on your reading",
+      text: "Find how many books you've read in total, and how you're doing on this year's goal.",
+      notes: "Books read, and how you're doing on the goal" },
+    { key: "t3", title: "Look at a shorter time span",
+      text: "Find how many pages you read in the last 3 months.",
+      notes: "Pages read in the last 3 months" },
+    { key: "t4", title: "Jump to a section",
+      text: { Desktop: "Get to the part of the page that shows what time of day you listen to audiobooks, as quickly as you can. Before you move your mouse over the squares on the right side of the screen, note what you think they're for.",
+              Mobile: "Get to the part of the page that shows what time of day you listen to audiobooks, as quickly as you can." },
+      notes: { Desktop: "What did you think the squares on the right were for?", Mobile: "How did you get there?" } },
+    { key: "t5", title: "Find something new to read",
+      text: "Pick a genre you read a lot of and find a book you might want to read next.",
+      notes: "Which book did you pick?" },
+    { key: "t6", title: "Log your progress",
+      text: "You just read more of a book you're in the middle of. Update your progress.",
+      notes: "Anything confusing?" },
+    { key: "t7", title: "Make it yours",
+      text: "Change your 2026 goal, then switch the page to dark mode.",
+      notes: "Where did you look first for dark mode?" },
+    { key: "t8", title: "One more time",
+      text: "Reload the dashboard and repeat tasks 3 and 4.",
+      notes: "Was it quicker the second time?" }
+  ];
+  var SUS = [
+    "I think that I would like to use this dashboard frequently.",
+    "I found the dashboard unnecessarily complex.",
+    "I thought the dashboard was easy to use.",
+    "I think that I would need the support of a technical person to be able to use this dashboard.",
+    "I found the various functions in this dashboard were well integrated.",
+    "I thought there was too much inconsistency in this dashboard.",
+    "I would imagine that most people would learn to use this dashboard very quickly.",
+    "I found the dashboard very cumbersome to use.",
+    "I felt very confident using the dashboard.",
+    "I needed to learn a lot of things before I could get going with this dashboard."
+  ];
+  var LOOK = [
+    ["lookA", "A. The dashboard is visually appealing.", true],
+    ["lookB", "B. The layout makes it clear what is most important.", true],
+    ["lookC", "C. It was easy to make the page my own, for example changing the goal and switching to dark mode.", true]
+  ];
+  var OPEN = [
+    ["q1", "Which part of the page were you drawn to most, and why?"],
+    ["q2", "What was the most useful information for you?"],
+    ["q3", "Was anything less useful, but still worth keeping?"],
+    ["q4", "Is anything missing that you'd want to see?"],
+    ["q5", "Did you want a way to jump between sections?", ["A row of section buttons", "A \"Jump to\" button", "No, scrolling is fine"], "Mobile"],
+    ["q6", "Anything else you'd change?"]
+  ];
+
+  var form = document.getElementById("test");
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function pills(name, values, labelId) {
+    return '<div class="choices" role="radiogroup"' + (labelId ? ' aria-labelledby="' + labelId + '"' : "") + ">" +
+      values.map(function (v) { return '<label class="choice"><input type="radio" name="' + name + '" value="' + esc(v) + '"><span>' + esc(v) + "</span></label>"; }).join("") + "</div>";
+  }
+  function scaleQ(name, text, required) {
+    var id = "l-" + name;
+    return '<div class="scale-q field" data-field="' + name + '"><p id="' + id + '">' + esc(text) + (required ? "" : ' <span class="req">(optional)</span>') + "</p>" +
+      pills(name, ["1", "2", "3", "4", "5"], id) + '<div class="scale-ends"><span>Strongly disagree</span><span>Strongly agree</span></div></div>';
+  }
+  function byFormat(v, fmt) { return typeof v === "string" ? v : (v[fmt] || v.Desktop); }
+
+  // Build the page
+  $("[data-tasks]").innerHTML = TASKS.map(function (t, i) {
+    return '<div class="task"><h3><span>' + (i + 1) + "</span>" + esc(t.title) + '</h3><p data-task-text="' + i + '"></p>' +
+      '<div class="row2"><span class="label" id="l-' + t.key + 'd">Finished?</span>' + pills(t.key + "_done", ["Yes", "Partly", "No"], "l-" + t.key + "d") +
+      '<span class="label" id="l-' + t.key + 'e">How easy?</span><div>' + pills(t.key + "_ease", ["1", "2", "3", "4", "5"], "l-" + t.key + "e") +
+      '<div class="scale-ends" style="max-width:290px"><span>Very hard</span><span>Very easy</span></div></div></div>' +
+      '<label class="field"><span class="label" style="font-weight:600;color:var(--text-secondary)" data-task-notes="' + i + '"></span><input type="text" name="' + t.key + '_notes"></label></div>';
+  }).join("");
+  $("[data-sus]").innerHTML = SUS.map(function (s, i) { return scaleQ("sus" + (i + 1), (i + 1) + ". " + s, true); }).join("");
+  $("[data-look]").innerHTML = LOOK.map(function (l) { return scaleQ(l[0], l[1], l[2]); }).join("");
+  $("[data-open]").innerHTML = OPEN.map(function (q) {
+    var only = q[3] ? ' data-only="' + q[3] + '" hidden' : "";
+    if (q[2]) return '<div class="field"' + only + '><span class="label" id="l-' + q[0] + '">' + esc(q[1]) + "</span>" + pills(q[0], q[2], "l-" + q[0]) + "</div>";
+    return '<label class="field"' + only + '><span class="label">' + esc(q[1]) + '</span><textarea name="' + q[0] + '"></textarea></label>';
+  }).join("");
+
+  function format() { var r = $('input[name="format"]:checked'); return r ? r.value : ""; }
+  function applyFormat() {
+    var fmt = format();
+    $$("[data-only]").forEach(function (el) {
+      var o = el.getAttribute("data-only");
+      el.hidden = o === "none" ? !!fmt : o !== fmt;
+    });
+    TASKS.forEach(function (t, i) {
+      $('[data-task-text="' + i + '"]').textContent = byFormat(t.text, fmt || "Desktop");
+      $('[data-task-notes="' + i + '"]').textContent = byFormat(t.notes, fmt || "Desktop");
+    });
+  }
+
+  // Save answers as people go, so switching tabs or a reload loses nothing.
+  var KEY = "gr-usability-answers";
+  function save() {
+    var data = {};
+    $$("input, textarea", form).forEach(function (el) {
+      if (el.type === "radio") { if (el.checked) data[el.name] = el.value; }
+      else if (el.type === "checkbox") data[el.name] = el.checked;
+      else data[el.name] = el.value;
+    });
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  function restore() {
+    var data; try { data = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { data = {}; }
+    $$("input, textarea", form).forEach(function (el) {
+      if (!(el.name in data)) return;
+      if (el.type === "radio") el.checked = data[el.name] === el.value;
+      else if (el.type === "checkbox") el.checked = !!data[el.name];
+      else el.value = data[el.name];
+    });
+  }
+  form.addEventListener("input", function (e) {
+    save();
+    if (e.target.name === "format") applyFormat();
+    var f = e.target.closest("[data-field]");
+    if (f) f.classList.remove("invalid");
+  });
+  form.addEventListener("change", function (e) { save(); if (e.target.name === "format") applyFormat(); });
+
+  function value(name) {
+    var els = $$('[name="' + name + '"]', form);
+    if (!els.length) return "";
+    if (els[0].type === "radio") { var c = els.filter(function (e) { return e.checked; })[0]; return c ? c.value : ""; }
+    if (els[0].type === "checkbox") return els[0].checked;
+    return els[0].value.trim();
+  }
+  function susScore() {
+    var total = 0;
+    for (var i = 1; i <= 10; i++) {
+      var v = +value("sus" + i);
+      if (!v) return "";
+      total += i % 2 ? v - 1 : 5 - v;
+    }
+    return String(total * 2.5);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var required = ["name", "format", "consent"];
+    for (var i = 1; i <= 10; i++) required.push("sus" + i);
+    LOOK.forEach(function (l) { if (l[2]) required.push(l[0]); });
+    var missing = required.filter(function (n) { return !value(n); });
+    $$("[data-field]").forEach(function (f) { f.classList.toggle("invalid", missing.indexOf(f.getAttribute("data-field")) >= 0); });
+    var err = $("[data-error]");
+    if (missing.length) {
+      err.textContent = "Please answer the " + missing.length + (missing.length === 1 ? " required question" : " required questions") + " marked in red.";
+      err.hidden = false;
+      var first = $('[data-field="' + missing[0] + '"]');
+      first.scrollIntoView({ behavior: "smooth", block: "center" });
+      var input = $("input", first); if (input) setTimeout(function () { input.focus({ preventScroll: true }); }, 400);
+      return;
+    }
+    err.hidden = true;
+
+    var answers = { name: value("name"), format: value("format"), sus_score: susScore() };
+    TASKS.forEach(function (t) { ["_done", "_ease", "_notes"].forEach(function (s) { answers[t.key + s] = value(t.key + s); }); });
+    for (var j = 1; j <= 10; j++) answers["sus" + j] = value("sus" + j);
+    LOOK.forEach(function (l) { answers[l[0]] = value(l[0]); });
+    OPEN.forEach(function (q) { answers[q[0]] = value(q[0]); });
+
+    var cfg = window.FORM_CONFIG || {};
+    var body = new URLSearchParams();
+    Object.keys(answers).forEach(function (k) {
+      if (answers[k] !== "" && cfg.entries && cfg.entries[k]) body.append(cfg.entries[k], answers[k]);
+    });
+
+    if (!cfg.action) {
+      var note = $("[data-preview-note]");
+      note.textContent = "Preview mode: the Google Form isn't connected yet, so nothing was sent. SUS score: " + answers.sus_score + ".";
+      note.hidden = false;
+      console.log("Answers (preview):", answers);
+      return;
+    }
+    var btn = $("[data-submit]");
+    btn.disabled = true; btn.textContent = "Sending…";
+    fetch(cfg.action, { method: "POST", mode: "no-cors", body: body })
+      .then(function () {
+        try { localStorage.removeItem(KEY); } catch (e2) {}
+        form.hidden = true;
+        $("[data-thanks]").hidden = false;
+        window.scrollTo(0, 0);
+      })
+      .catch(function () {
+        btn.disabled = false; btn.textContent = "Send my answers";
+        err.textContent = "Your answers couldn't be sent. Check your connection and try again. Nothing has been lost.";
+        err.hidden = false;
+      });
+  });
+
+  restore();
+  applyFormat();
+})();
+</script>
+</body>
+</html>
